@@ -1,17 +1,31 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <Tree :tree="tree" v-if="Object.keys(tree).length > 0"/>
+    <div v-else>loading tree ... </div>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Tree from './components/Tree.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    Tree
+  },
+  data: function() {
+    return {
+      tree: {}
+    }
+  },
+  methods: {
+    fetchTree: async function() {
+      const rawTree = await fetch('/static/node_modules.json');
+      this.tree = await rawTree.json();
+    }
+  },
+  created: function() {
+    this.fetchTree();
   }
 }
 </script>
