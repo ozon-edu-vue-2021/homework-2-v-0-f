@@ -1,7 +1,8 @@
 <template>
   <div id="app">
-    <Tree :tree="tree" v-if="Object.keys(tree).length > 0"/>
-    <div v-else>loading tree ... </div>
+    <div class="path" v-if="treeHasItems">/ {{ path.join(' / ') }} </div>
+    <Tree :tree="tree" :path="[]" v-if="treeHasItems"/>
+    <div v-else>loading ... </div>
   </div>
 </template>
 
@@ -15,17 +16,39 @@ export default {
   },
   data: function() {
     return {
-      tree: {}
+      tree: {},
+      selectedItem: null,
+      path: []
+    }
+  },
+  computed: {
+    treeHasItems: function() {
+      return Object.keys(this.tree).length > 0;
     }
   },
   methods: {
     fetchTree: async function() {
       const rawTree = await fetch('/static/node_modules.json');
-      this.tree = await rawTree.json();
+      const tree = await rawTree.json();
+      this.tree = Object.freeze(tree);
+      this.path.push(this.tree.name);
+    },
+    updateSelected: function(el) {
+      if(this.selectedItem && this.selectedItem !== el) this.selectedItem.selected = false;
+      this.selectedItem = el;
+    },
+    updatePath: function(path) {
+      this.path = path;
     }
   },
   created: function() {
     this.fetchTree();
+  },
+  provide() {
+    return {
+      updateSelected: this.updateSelected,
+      updatePath: this.updatePath
+    }
   }
 }
 </script>
@@ -37,6 +60,17 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 40px;
+  max-height: 800px;
+  max-width: 600px;
+  overflow: auto;
+  background: #eff;
+}
+.path {
+  margin-bottom: 10px;
+  text-align: left;
+  background: #eee;
 }
 </style>
